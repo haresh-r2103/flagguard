@@ -10,3 +10,11 @@ export const CORE_VERSION = '0.1.0';
 export { emptyCounts, errorRate, type FlagCounts, type PathCounts } from './types.js';
 export { SlidingWindow, type SlidingWindowOptions } from './sliding-window.js';
 export { WindowStore } from './window-store.js';
+export {
+  DEFAULT_KILL_RULE,
+  evaluate,
+  type Evaluation,
+  type KillRuleConfig,
+  type Verdict,
+} from './kill-rule.js';
+export { BreachTracker, type Action, type TrackerResult } from './breach-tracker.js';
