@@ -11,9 +11,9 @@ the flag off and tells your team.
 | Phase                    | State       |
 | ------------------------ | ----------- |
 | 0. Scaffold              | Done        |
-| 1. Sliding window        | Next        |
-| 2. Kill rule             | Not started |
-| 3. Report API            | Not started |
+| 1. Sliding window        | Done        |
+| 2. Kill rule             | Done        |
+| 3. Report API            | Next        |
 | 4. Acting (Flagsmith)    | Not started |
 | 5. Alerts and audit      | Not started |
 | 6. SDK                   | Not started |
