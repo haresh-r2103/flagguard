@@ -21,4 +21,6 @@ Concepts to revisit: fail-open vs fail-closed (1), least privilege (8), when sha
 
 ## Build phase
 
-Checkpoint questions and answers are added here as each phase is finished.
+| Phase       | Checkpoint question                          | Outcome                                                                                                                          |
+| ----------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 0. Scaffold | What breaks if core imports from the server? | Saw that the core would lose its independence; needed the circular-dependency and reuse points. Rule: dependencies point inward. |
