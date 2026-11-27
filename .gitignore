@@ -151,6 +151,11 @@ vite.config.ts.timestamp-*
 # Turbo Repo (https://turborepo.dev/)
 .turbo
 
+# FlagGuard local data (audit log database)
+data/
+*.db
+*.db-journal
+
 # Nx (https://nx.dev/)
 .nx/cache
 .nx/workspace-data
