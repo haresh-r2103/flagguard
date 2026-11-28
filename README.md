@@ -16,8 +16,8 @@ the flag off and tells your team.
 | 3. Report API            | Done        |
 | 4. Acting (Flagsmith)    | Done        |
 | 5. Alerts and audit      | Done        |
-| 6. SDK                   | Next        |
-| 7. Demo shop, simulation | Not started |
+| 6. SDK                   | Done        |
+| 7. Demo shop, simulation | Next        |
 | 8. Self-hosted setup     | Not started |
 
 ## Development
@@ -65,6 +65,24 @@ Every decision is written to `data/audit.jsonl`. Set `DISCORD_WEBHOOK_URL` and/o
 | 429    | Rate limited; see `Retry-After`                              |
 
 `GET /health` returns `{ "status": "ok", "dry_run": true, "flags_tracked": 1 }`.
+
+### Using the SDK in your app
+
+```ts
+import { FlagGuardClient } from '@flagguard/sdk';
+
+const fg = new FlagGuardClient({
+  url: 'http://localhost:4000',
+  ingestKey: process.env.FLAGGUARD_INGEST_KEY!,
+  environment: 'production',
+});
+
+const isOn = flags.isFeatureEnabled('new_checkout'); // from the Flagsmith SDK
+await fg.guard('new_checkout', isOn, () => (isOn ? newCheckout(order) : oldCheckout(order)));
+```
+
+`guard()` never waits on the network. Counts are sent every 5 s in the background, and if
+FlagGuard is down the app carries on as normal (fail-open).
 
 See [docs/architecture.md](docs/architecture.md) for the design.
 
