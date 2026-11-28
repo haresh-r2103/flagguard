@@ -160,3 +160,6 @@ data/
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+
+# Your own FlagGuard config (copy of flagguard.example.yml)
+flagguard.yml

@@ -14,10 +14,10 @@ the flag off and tells your team.
 | 1. Sliding window        | Done        |
 | 2. Kill rule             | Done        |
 | 3. Report API            | Done        |
-| 4. Acting (Flagsmith)    | Next        |
-| 5. Alerts and audit      | Not started |
-| 6. SDK                   | Not started |
-| 7. Demo shop, simulation | Not started |
+| 4. Acting (Flagsmith)    | Done        |
+| 5. Alerts and audit      | Done        |
+| 6. SDK                   | Done        |
+| 7. Demo shop, simulation | Next        |
 | 8. Self-hosted setup     | Not started |
 
 ## Development
@@ -31,7 +31,14 @@ npm run check     # typecheck + formatting + tests
 cp .env.example .env   # then fill in your keys (never commit .env)
 cp flagguard.example.yml flagguard.yml
 npm run dev:server     # FlagGuard on http://localhost:4000
+npm run check:flagsmith  # read-only: can FlagGuard see your flags in Flagsmith?
 ```
+
+FlagGuard starts in **dry run**: it logs what it would disable but changes nothing.
+Set `dry_run: false` in `flagguard.yml` once `check:flagsmith` passes.
+
+Every decision is written to `data/audit.jsonl`. Set `DISCORD_WEBHOOK_URL` and/or
+`ALERT_WEBHOOK_URL` in `.env` to get one alert per incident.
 
 ### Report API
 
@@ -58,6 +65,24 @@ npm run dev:server     # FlagGuard on http://localhost:4000
 | 429    | Rate limited; see `Retry-After`                              |
 
 `GET /health` returns `{ "status": "ok", "dry_run": true, "flags_tracked": 1 }`.
+
+### Using the SDK in your app
+
+```ts
+import { FlagGuardClient } from '@flagguard/sdk';
+
+const fg = new FlagGuardClient({
+  url: 'http://localhost:4000',
+  ingestKey: process.env.FLAGGUARD_INGEST_KEY!,
+  environment: 'production',
+});
+
+const isOn = flags.isFeatureEnabled('new_checkout'); // from the Flagsmith SDK
+await fg.guard('new_checkout', isOn, () => (isOn ? newCheckout(order) : oldCheckout(order)));
+```
+
+`guard()` never waits on the network. Counts are sent every 5 s in the background, and if
+FlagGuard is down the app carries on as normal (fail-open).
 
 See [docs/architecture.md](docs/architecture.md) for the design.
 
