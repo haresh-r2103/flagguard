@@ -38,8 +38,11 @@ describe('withRetry: exponential backoff', () => {
   });
 });
 
-/** A fake Flagsmith API that records requests, so tests never touch the real one. */
-function fakeFlagsmith(status = 200) {
+/**
+ * A fake Flagsmith API that records requests, so tests never touch the real one.
+ * `versioned` mimics an environment with feature versioning: the classic PATCH is refused.
+ */
+function fakeFlagsmith(status = 200, versioned = false) {
   const calls: { method: string; url: string; auth: string | null; body: unknown }[] = [];
   const fetchFn = (async (url: string | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
@@ -54,11 +57,14 @@ function fakeFlagsmith(status = 200) {
       return Response.json({
         results: [
           { id: 7, enabled: true, feature_segment: 3, identity: null }, // segment override
-          { id: 42, enabled: true, feature_segment: null, identity: null }, // environment default
+          { id: 42, enabled: true, feature: 99, feature_segment: null, identity: null }, // default
         ],
       });
     }
-    return Response.json({ id: 42, enabled: false });
+    if (versioned && String(url).includes('/featurestates/')) {
+      return Response.json({ detail: 'feature versioning is enabled' }, { status: 400 });
+    }
+    return Response.json({ ok: true });
   }) as typeof fetch;
   return { calls, fetchFn };
 }
@@ -85,6 +91,26 @@ describe('FlagsmithController', () => {
       url: 'https://flagsmith.test/api/v1/environments/envKey123/featurestates/42/',
       body: { enabled: false },
     });
+  });
+
+  it('falls back to the __future__ endpoint when the environment uses feature versioning', async () => {
+    const { calls, fetchFn } = fakeFlagsmith(200, true);
+    await new FlagsmithController({ ...options, fetchFn }).disable('development', 'new_checkout');
+
+    expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual([
+      'GET https://flagsmith.test/api/v1/environments/envKey123/featurestates/?feature_name=new_checkout',
+      'PATCH https://flagsmith.test/api/v1/environments/envKey123/featurestates/42/',
+      'PATCH https://flagsmith.test/api/__future__/environments/envKey123/features/99/',
+    ]);
+    expect(calls[2]?.body).toEqual({ environment_default: { enabled: false } });
+  });
+
+  it("includes Flagsmith's explanation in errors", async () => {
+    const fetchFn = (async () =>
+      Response.json({ detail: 'Invalid API key' }, { status: 401 })) as unknown as typeof fetch;
+    await expect(
+      new FlagsmithController({ ...options, fetchFn }).disable('development', 'x'),
+    ).rejects.toThrow(/401: .*Invalid API key/);
   });
 
   it('treats 5xx as retryable and 401 as permanent', async () => {
