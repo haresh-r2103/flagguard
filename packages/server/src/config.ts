@@ -39,6 +39,16 @@ const fileSchema = z
       .default({}),
     defaults: ruleOverridesSchema.default({}),
     flags: z.record(z.string().min(1), flagSchema).default({}),
+    flagsmith: z
+      .object({
+        /**
+         * FlagGuard environment name -> Flagsmith environment key. These are the public,
+         * client-side keys (Environment settings > SDK keys), so they are safe in this file.
+         */
+        environment_keys: z.record(z.string().min(1), z.string().min(1)).default({}),
+      })
+      .strict()
+      .default({}),
   })
   .strict();
 
@@ -47,6 +57,12 @@ export interface ServerConfig {
   ingestKey: string;
   dryRun: boolean;
   rateLimit: { perSecond: number; burst: number };
+  flagsmith: {
+    apiUrl: string;
+    /** Organisation API key. Required unless dry run is on. */
+    adminKey: string | undefined;
+    environmentKeys: Record<string, string>;
+  };
   /** Kill rule for a guarded flag, or undefined if FlagGuard does not guard it. */
   ruleFor(environment: string, flag: string): KillRuleConfig | undefined;
   /** Every guarded (environment, flag) pair. */
@@ -103,11 +119,35 @@ export function parseConfig(yamlText: string, env: NodeJS.ProcessEnv): ServerCon
     }
   }
 
+  const adminKey = env.FLAGSMITH_ADMIN_API_KEY?.trim() || undefined;
+  if (!file.dry_run) {
+    if (adminKey === undefined) {
+      throw new ConfigError(
+        'dry_run is false, so FLAGSMITH_ADMIN_API_KEY is required (Organisation Settings > API Keys)',
+      );
+    }
+    const missing = [...rules.values()]
+      .map((r) => r.environment)
+      .filter(
+        (e, i, all) => all.indexOf(e) === i && file.flagsmith.environment_keys[e] === undefined,
+      );
+    if (missing.length > 0) {
+      throw new ConfigError(
+        `dry_run is false, so flagsmith.environment_keys needs a key for: ${missing.join(', ')}`,
+      );
+    }
+  }
+
   return {
     port,
     ingestKey,
     dryRun: file.dry_run,
     rateLimit: { perSecond: file.rate_limit.per_second, burst: file.rate_limit.burst },
+    flagsmith: {
+      apiUrl: env.FLAGSMITH_API_URL?.trim() || 'https://api.flagsmith.com/api/v1',
+      adminKey,
+      environmentKeys: file.flagsmith.environment_keys,
+    },
     ruleFor: (environment, flag) => rules.get(`${environment}\u0000${flag}`)?.rule,
     guardedFlags: () => [...rules.values()],
   };

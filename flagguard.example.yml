@@ -18,8 +18,16 @@ defaults:
   max_error_rate_without_baseline_percent: 25 # flags at 100% rollout: kill above 25%
   consecutive_breaches: 3 # ...on 3 checks in a row (about 15 s)
 
+# Flagsmith environment keys, per FlagGuard environment name.
+# Find them in Flagsmith: Environment > Settings > SDK keys (the client-side key, not "ser.").
+# Client-side keys are public, so they're fine in this file. The admin key goes in .env.
+flagsmith:
+  environment_keys:
+    development: YOUR_DEVELOPMENT_ENVIRONMENT_KEY
+    # production: YOUR_PRODUCTION_ENVIRONMENT_KEY
+
 # Only flags listed here are guarded. Reports for other flags are rejected.
 flags:
   new_checkout:
-    environments: [development, production]
+    environments: [development]
     consecutive_breaches: 3

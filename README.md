@@ -14,8 +14,8 @@ the flag off and tells your team.
 | 1. Sliding window        | Done        |
 | 2. Kill rule             | Done        |
 | 3. Report API            | Done        |
-| 4. Acting (Flagsmith)    | Next        |
-| 5. Alerts and audit      | Not started |
+| 4. Acting (Flagsmith)    | Done        |
+| 5. Alerts and audit      | Next        |
 | 6. SDK                   | Not started |
 | 7. Demo shop, simulation | Not started |
 | 8. Self-hosted setup     | Not started |
@@ -31,7 +31,11 @@ npm run check     # typecheck + formatting + tests
 cp .env.example .env   # then fill in your keys (never commit .env)
 cp flagguard.example.yml flagguard.yml
 npm run dev:server     # FlagGuard on http://localhost:4000
+npm run check:flagsmith  # read-only: can FlagGuard see your flags in Flagsmith?
 ```
+
+FlagGuard starts in **dry run**: it logs what it would disable but changes nothing.
+Set `dry_run: false` in `flagguard.yml` once `check:flagsmith` passes.
 
 ### Report API
 
