@@ -1,0 +1,25 @@
+# FlagGuard configuration. Copy to flagguard.yml and edit.
+# This file holds no secrets: keys go in .env.
+
+# Dry run: FlagGuard decides and alerts, but never switches a flag off.
+# Keep this on until you trust your thresholds, then set it to false.
+dry_run: true
+
+# Limit on reports per client (by IP). The SDK sends 1 report per flag every 5 s.
+rate_limit:
+  per_second: 10
+  burst: 20
+
+# Thresholds used by every flag unless the flag overrides them.
+defaults:
+  min_requests: 50 # don't judge until the new code has this many requests in 60 s
+  max_diff_points: 5 # kill if the new code's error rate is 5+ points above the old code's
+  min_error_rate_percent: 2 # ...and above 2%
+  max_error_rate_without_baseline_percent: 25 # flags at 100% rollout: kill above 25%
+  consecutive_breaches: 3 # ...on 3 checks in a row (about 15 s)
+
+# Only flags listed here are guarded. Reports for other flags are rejected.
+flags:
+  new_checkout:
+    environments: [development, production]
+    consecutive_breaches: 3

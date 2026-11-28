@@ -21,7 +21,8 @@ Concepts to revisit: fail-open vs fail-closed (1), least privilege (8), when sha
 
 ## Build phase
 
-| Phase             | Checkpoint question                               | Outcome                                                                                                                                                                 |
-| ----------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0. Scaffold       | What breaks if core imports from the server?      | Saw that the core would lose its independence; needed the circular-dependency and reuse points. Rule: dependencies point inward.                                        |
-| 1. Sliding window | A report from 0 s arrives at 70 s: add or ignore? | Ignore, because it is outside the window. Added: adding it would also wipe the fresh data in its slot. Needed a plain-language re-explanation of the ring buffer first. |
+| Phase             | Checkpoint question                                                      | Outcome                                                                                                                                                                 |
+| ----------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0. Scaffold       | What breaks if core imports from the server?                             | Saw that the core would lose its independence; needed the circular-dependency and reuse points. Rule: dependencies point inward.                                        |
+| 1. Sliding window | A report from 0 s arrives at 70 s: add or ignore?                        | Ignore, because it is outside the window. Added: adding it would also wipe the fresh data in its slot. Needed a plain-language re-explanation of the ring buffer first. |
+| 2. Kill rule      | A flickering failure never makes 3 breaches in a row: bug or acceptable? | Said acceptable. Reason added: the 60 s window averages out flicker, so only borderline rates slip through. Future fix: M of N checks.                                  |
