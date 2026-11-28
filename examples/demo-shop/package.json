@@ -1,0 +1,11 @@
+{
+  "name": "demo-shop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@flagguard/sdk": "*",
+    "express": "^5.3.0"
+  }
+}

@@ -8,17 +8,31 @@ the flag off and tells your team.
 
 ## Status
 
-| Phase                    | State       |
-| ------------------------ | ----------- |
-| 0. Scaffold              | Done        |
-| 1. Sliding window        | Done        |
-| 2. Kill rule             | Done        |
-| 3. Report API            | Done        |
-| 4. Acting (Flagsmith)    | Done        |
-| 5. Alerts and audit      | Done        |
-| 6. SDK                   | Done        |
-| 7. Demo shop, simulation | Next        |
-| 8. Self-hosted setup     | Not started |
+| Phase                    | State |
+| ------------------------ | ----- |
+| 0. Scaffold              | Done  |
+| 1. Sliding window        | Done  |
+| 2. Kill rule             | Done  |
+| 3. Report API            | Done  |
+| 4. Acting (Flagsmith)    | Done  |
+| 5. Alerts and audit      | Done  |
+| 6. SDK                   | Done  |
+| 7. Demo shop, simulation | Done  |
+| 8. Self-hosted setup     | Next  |
+
+## Demo
+
+Three terminals, from the repo root, with `.env` and `flagguard.yml` filled in and
+`new_checkout` turned **ON** in Flagsmith:
+
+```bash
+npm run dev:server   # 1. FlagGuard on :4000
+npm run dev:shop     # 2. Demo shop on http://localhost:3000 (open it in a browser)
+npm run simulate     # 3. 20 checkouts/s; a bug hits the new checkout at 20 s
+```
+
+FlagGuard switches `new_checkout` off about 15 s after the bug, and the shop moves every
+user back to the classic checkout within 10 s more. The traffic is simulated.
 
 ## Development
 
