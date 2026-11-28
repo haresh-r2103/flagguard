@@ -15,8 +15,8 @@ the flag off and tells your team.
 | 2. Kill rule             | Done        |
 | 3. Report API            | Done        |
 | 4. Acting (Flagsmith)    | Done        |
-| 5. Alerts and audit      | Next        |
-| 6. SDK                   | Not started |
+| 5. Alerts and audit      | Done        |
+| 6. SDK                   | Next        |
 | 7. Demo shop, simulation | Not started |
 | 8. Self-hosted setup     | Not started |
 
@@ -36,6 +36,9 @@ npm run check:flagsmith  # read-only: can FlagGuard see your flags in Flagsmith?
 
 FlagGuard starts in **dry run**: it logs what it would disable but changes nothing.
 Set `dry_run: false` in `flagguard.yml` once `check:flagsmith` passes.
+
+Every decision is written to `data/audit.jsonl`. Set `DISCORD_WEBHOOK_URL` and/or
+`ALERT_WEBHOOK_URL` in `.env` to get one alert per incident.
 
 ### Report API
 

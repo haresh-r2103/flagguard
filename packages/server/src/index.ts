@@ -4,8 +4,11 @@
  */
 import { existsSync } from 'node:fs';
 import { WindowStore } from '@flagguard/core';
+import { DiscordNotifier, WebhookNotifier, type Notifier } from './alerts.js';
 import { createApp } from './app.js';
+import { AuditLog } from './audit-log.js';
 import { ConfigError, loadConfig } from './config.js';
+import { createEventHandler } from './event-handler.js';
 import { FlagsmithController } from './flagsmith.js';
 import { Guardian } from './guardian.js';
 
@@ -23,7 +26,18 @@ try {
     adminKey: config.flagsmith.adminKey ?? '',
     environmentKeys: config.flagsmith.environmentKeys,
   });
-  const guardian = new Guardian({ config, store, controller });
+
+  // Alerts: every channel configured in .env. None configured = log only.
+  const notifiers: Notifier[] = [];
+  if (process.env.DISCORD_WEBHOOK_URL) {
+    notifiers.push(new DiscordNotifier(process.env.DISCORD_WEBHOOK_URL));
+  }
+  if (process.env.ALERT_WEBHOOK_URL)
+    notifiers.push(new WebhookNotifier(process.env.ALERT_WEBHOOK_URL));
+  const auditPath = process.env.FLAGGUARD_AUDIT_LOG ?? 'data/audit.jsonl';
+  const onEvent = createEventHandler({ audit: new AuditLog(auditPath), notifiers });
+
+  const guardian = new Guardian({ config, store, controller, onEvent });
   guardian.start(5_000);
 
   const server = app.listen(config.port, () => {
@@ -31,7 +45,10 @@ try {
     console.log(`FlagGuard listening on http://localhost:${config.port}`);
     console.log(`Config: ${configPath} | dry run: ${config.dryRun}`);
     console.log(`Guarding: ${guarded.length > 0 ? guarded.join(', ') : '(no flags configured)'}`);
-    console.log('Checking every 5 s');
+    console.log(`Checking every 5 s | audit log: ${auditPath}`);
+    console.log(
+      `Alerts: ${notifiers.length > 0 ? notifiers.map((n) => n.name).join(', ') : 'log only'}`,
+    );
   });
 
   // Stop cleanly on Ctrl+C or when Docker stops the container.
